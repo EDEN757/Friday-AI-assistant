@@ -88,7 +88,7 @@ def start_audio_stream():
     """Continuously open the audio stream. On error, retry after a short pause."""
     with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, callback=audio_callback):
         sd.sleep(10**9)
-
+        
 def record_until_silence():
     global audio_buffer
     recorded = np.array([], dtype=np.int16)
@@ -242,7 +242,7 @@ def speak(text):
 def main():
     global processing
     
-    print("Assistant active. Say 'Jarvis' to wake me up.")
+    print("Assistant active. Say 'friday' to wake me up.")
     speak("Online and ready for your commands.")
     
     # Start the audio capture in a daemon thread.
@@ -259,14 +259,14 @@ def main():
         if len(current_buffer) > 0:
             transcript = transcribe_audio(current_buffer).lower()
             
-            if "jarvis" in transcript:
+            if "friday" in transcript:
                 processing = True
                 try:
                     command_audio = record_until_silence()
                     full_command = transcribe_audio(command_audio).strip()
                     
-                    if "jarvis" in full_command.lower():
-                        full_command = re.sub(r'(?i)\bjarvis\b', '', full_command).strip()
+                    if "friday" in full_command.lower():
+                        full_command = re.sub(r'(?i)\bfriday\b', '', full_command).strip()
                     
                     print(f"[User] {full_command}")
                     
