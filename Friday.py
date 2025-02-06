@@ -26,7 +26,7 @@ from playsound import playsound
 
 SAMPLE_RATE = 16000
 SILENCE_THRESHOLD = 0.025
-SILENCE_DURATION = 1.0
+SILENCE_DURATION = 2.0
 BUFFER_DURATION = 5
 MAX_BUFFER_SAMPLES = SAMPLE_RATE * BUFFER_DURATION
 MAX_HISTORY_LENGTH = 6
@@ -228,7 +228,6 @@ def speak(text):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
             temp_filename = f.name
         tts.save(temp_filename)
-        from playsound import playsound
         playsound(temp_filename)
         os.remove(temp_filename)
     except Exception as e:
@@ -257,24 +256,27 @@ def main():
             current_buffer = audio_buffer.copy()
         
         if len(current_buffer) > 0:
+            # Transcribe the current audio buffer
             transcript = transcribe_audio(current_buffer).lower()
             
             if "friday" in transcript:
                 processing = True
                 try:
-                    command_audio = record_until_silence()
-                    full_command = transcribe_audio(command_audio).strip()
+                    # Extract the command immediately following the wake word "friday"
+                    command_text = transcript.split("friday", 1)[1].strip()
                     
-                    if "friday" in full_command.lower():
-                        full_command = re.sub(r'(?i)\bfriday\b', '', full_command).strip()
+                    # If no command is detected right after "friday", capture additional audio
+                    if not command_text:
+                        additional_audio = record_until_silence()
+                        command_text = transcribe_audio(additional_audio).strip()
                     
-                    print(f"[User] {full_command}")
+                    print(f"[User] {command_text}")
                     
-                    answer = handle_query(full_command)
+                    answer = handle_query(command_text)
                     print(f"[Assistant] {answer}")
                     speak(answer)
                     
-                    update_history(full_command, answer)
+                    update_history(command_text, answer)
                 finally:
                     processing = False
         
