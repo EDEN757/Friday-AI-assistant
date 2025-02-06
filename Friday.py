@@ -1,3 +1,4 @@
+#Friday.py
 import whisper
 import sounddevice as sd
 import scipy.io.wavfile as wav
